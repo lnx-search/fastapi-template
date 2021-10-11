@@ -15,6 +15,12 @@ format in the headers:
 Authorization: <token>
 ```
 
+## Warning
+lnx is still not designed to be fully public facing, although the authorization will
+project from users having access to things they shouldn't it's still ***HIGHLY*** advised
+that you do not rely on this system entirely to protect your system. We recommend putting
+lnx behind an existing backend api for most cases.
+
 ## Permissions
 
 - **MODIFY_ENGINE** - `1 << 0` = 1
