@@ -55,7 +55,56 @@ class IndexCreationPayload(BaseModel):
     index: IndexDeclaration
 
 
+class QueryKind(Enum):
+    Normal = "normal"
+    Fuzzy = "fuzzy"
+    MoreLikeThis = "more-like-this"
+    Term: Dict[str, Union[str, int, float]] = {
+        "term": "field-name"
+    }
+
+
+class Sort(Enum):
+    Acs = "acs"
+    Desc = "desc"
+
+
+class Occur(Enum):
+    Should = "should"
+    Must = "must"
+    MustNot = "mustnot"
+
+
+class QueryData(BaseModel):
+    value: Union[str, int, float]
+    kind: QueryKind = QueryKind.Fuzzy
+    occur: Occur = Occur.Should
+
+
+class QueryPayload(BaseModel):
+    query: Union[str, QueryData, List[QueryData]]
+    limit: conint(gt=0) = 20
+    offset: conint(ge=0) = 0
+    order_by: Optional[str] = None
+    sort: Sort = Sort.Desc
+
+
+class DocumentHit(BaseModel):
+    data: Dict[str, List[str]]
+    ratio: Optional[float]
+    document_id: str
+
+
+class QueryResults(BaseModel):
+    hits: List[DocumentHit]
+    count: int
+    time_taken: float
+
+
 class BasicResponse(BaseModel):
     status: int
     data: Union[str, dict]
 
+
+class QueryResponse(BasicResponse):
+    data: QueryResults

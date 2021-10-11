@@ -1,8 +1,6 @@
-from typing import Union, Dict, List
-
 from fastapi import FastAPI
 
-from models import IndexCreationPayload, BasicResponse
+from models import *
 
 
 def get_md(file: str) -> str:
@@ -10,23 +8,42 @@ def get_md(file: str) -> str:
         return file.read()
 
 
+INDEXES_TITLE = "📚 Managing indexes"
+TRANSACTIONS_TITLE = "💾 Managing transactions"
+DOCUMENTS_TITLE = "📃 Managing documents"
+SEARCHES_TITLE = "🔍 Run searches"
+AUTH_TITLE = "🔑 Securing lnx"
+OPTIMISING_TITLE = "⚡ Optimising your index"
+
 lnx = FastAPI(
     version="0.6.0",
-    title="LNX Docs",
+    title="Lnx Docs",
     description=get_md("desc"),
     docs_url=None,
     redoc_url="/",
     openapi_tags=[
         {
-            "name": "📚 Indexes",
+            "name": INDEXES_TITLE,
             "description": get_md("indexes")
         },
         {
-            "name": "💾 Transactions",
+            "name": TRANSACTIONS_TITLE,
             "description": get_md("transactions")
         },
         {
-            "name": "📃 Documents",
+            "name": DOCUMENTS_TITLE,
+            "description": get_md("documents")
+        },
+        {
+            "name": SEARCHES_TITLE,
+            "description": get_md("searching")
+        },
+        {
+            "name": AUTH_TITLE,
+            "description": get_md("auth")
+        },
+        {
+            "name": OPTIMISING_TITLE,
             "description": get_md("documents")
         },
     ]
@@ -36,7 +53,7 @@ lnx = FastAPI(
 @lnx.post(
     "/indexes",
     name="Create Index",
-    tags=["📚 Indexes"],
+    tags=[INDEXES_TITLE],
     response_model=BasicResponse,
     responses={
         400: {
@@ -64,7 +81,7 @@ async def create_index(_payload: IndexCreationPayload):
 @lnx.delete(
     "/indexes/{index:str}",
     name="Delete Index",
-    tags=["📚 Indexes"],
+    tags=[INDEXES_TITLE],
     response_model=BasicResponse,
     responses={
         400: {
@@ -86,7 +103,7 @@ async def delete_index(index: str):  # noqa
 @lnx.post(
     "/indexes/{index:str}/commit",
     name="Commit",
-    tags=["💾 Transactions"],
+    tags=[TRANSACTIONS_TITLE],
     response_model=BasicResponse,
     responses={
         400: {
@@ -111,7 +128,7 @@ async def commit_changes(index: str):  # noqa
 @lnx.post(
     "/indexes/{index:str}/rollback",
     name="Rollback",
-    tags=["💾 Transactions"],
+    tags=[TRANSACTIONS_TITLE],
     response_model=BasicResponse,
     responses={
         400: {
@@ -136,7 +153,7 @@ async def rollback_changes(index: str):  # noqa
 @lnx.post(
     "/indexes/{index:str}/documents",
     name="Add Documents",
-    tags=["📃 Documents"],
+    tags=[DOCUMENTS_TITLE],
     response_model=BasicResponse,
     responses={
         400: {
@@ -171,7 +188,7 @@ async def add_documents(
 @lnx.delete(
     "/indexes/{index:str}/documents",
     name="Delete Specific Documents",
-    tags=["📃 Documents"],
+    tags=[DOCUMENTS_TITLE],
     response_model=BasicResponse,
     responses={
         400: {
@@ -205,7 +222,7 @@ async def delete_documents(
 @lnx.delete(
     "/indexes/{index:str}/documents/clear",
     name="Clear All Documents",
-    tags=["📃 Documents"],
+    tags=[DOCUMENTS_TITLE],
     response_model=BasicResponse,
     responses={
         400: {
@@ -229,7 +246,7 @@ async def clear_delete_documents(index: str):  # noqa
 @lnx.get(
     "/indexes/{index:str}/documents/{document_id:int}",
     name="Get Document By Id",
-    tags=["📃 Documents"],
+    tags=[DOCUMENTS_TITLE],
     response_model=BasicResponse,
     responses={
         400: {
@@ -247,6 +264,33 @@ async def clear_delete_documents(index: str):  # noqa
 async def get_document(index: str, document_id: int):  # noqa
     """
     Get a single document from the index with it's given document_id.
+    """
+
+
+@lnx.post(
+    "/indexes/{index:str}/search",
+    name="Search Index",
+    tags=[SEARCHES_TITLE],
+    response_model=QueryResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the query is malformed",
+            "model": BasicResponse,
+        },
+        422: {
+            "description": (
+                "The server was unable to deserialize the payload given."
+            ),
+            "model": BasicResponse,
+        }
+    },
+    response_description=(
+        "A list of matching results ordered by and sorted according to the passed query."
+    )
+)
+async def search_index(index: str, payload: QueryPayload):  # noqa
+    """
+    Search the index for the given query.
     """
 
 
