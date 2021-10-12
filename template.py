@@ -15,6 +15,15 @@ SEARCHES_TITLE = "🔍 Run searches"
 AUTH_TITLE = "🔑 Securing lnx"
 OPTIMISING_TITLE = "⚡ Optimising your index"
 
+PERMISSIONS_RESPONSE = {
+    401: {
+        "description": (
+            "You lack the permissions to run this operation."
+        ),
+        "model": BasicResponse,
+    },
+}
+
 lnx = FastAPI(
     version="0.6.0",
     title="Lnx Docs",
@@ -68,7 +77,8 @@ lnx = FastAPI(
                 "The server was unable to deserialize the payload given."
             ),
             "model": BasicResponse,
-        }
+        },
+        **PERMISSIONS_RESPONSE,
     },
     response_description=(
         "A standard response from Lnx, with a simple conformation message."
@@ -90,7 +100,8 @@ async def create_index(_payload: IndexCreationPayload):
         },
         422: {
             "description": "This can never happen. (This is a docs issue)",
-        }
+        },
+        **PERMISSIONS_RESPONSE,
     },
     response_description=(
         "A standard response from Lnx, with a simple conformation message."
@@ -112,7 +123,8 @@ async def delete_index(index: str):  # noqa
         },
         422: {
             "description": "This can never happen. (This is a docs issue)",
-        }
+        },
+        **PERMISSIONS_RESPONSE,
     },
     response_description=(
         "A standard response from Lnx, with a simple conformation message."
@@ -137,7 +149,8 @@ async def commit_changes(index: str):  # noqa
         },
         422: {
             "description": "This can never happen. (This is a docs issue)",
-        }
+        },
+        **PERMISSIONS_RESPONSE,
     },
     response_description=(
         "A standard response from Lnx, with a simple conformation message."
@@ -165,7 +178,8 @@ async def rollback_changes(index: str):  # noqa
                 "The server was unable to deserialize the payload given."
             ),
             "model": BasicResponse,
-        }
+        },
+        **PERMISSIONS_RESPONSE,
     },
     response_description=(
         "A standard response from Lnx, with a simple conformation message."
@@ -200,7 +214,8 @@ async def add_documents(
                 "The server was unable to deserialize the payload given."
             ),
             "model": BasicResponse,
-        }
+        },
+        **PERMISSIONS_RESPONSE,
     },
     response_description=(
         "A standard response from Lnx, with a simple conformation message."
@@ -231,7 +246,8 @@ async def delete_documents(
         },
         422: {
             "description": "This can never happen. (This is a docs issue)",
-        }
+        },
+        **PERMISSIONS_RESPONSE,
     },
     response_description=(
         "A standard response from Lnx, with a simple conformation message."
@@ -255,7 +271,8 @@ async def clear_delete_documents(index: str):  # noqa
         },
         422: {
             "description": "This can never happen. (This is a docs issue)",
-        }
+        },
+        **PERMISSIONS_RESPONSE,
     },
     response_description=(
         "A standard response from Lnx, with a simple conformation message."
@@ -282,7 +299,8 @@ async def get_document(index: str, document_id: int):  # noqa
                 "The server was unable to deserialize the payload given."
             ),
             "model": BasicResponse,
-        }
+        },
+        **PERMISSIONS_RESPONSE,
     },
     response_description=(
         "A list of matching results ordered by and sorted according to the passed query."
@@ -294,7 +312,117 @@ async def search_index(index: str, payload: QueryPayload):  # noqa
     """
 
 
+@lnx.post(
+    "/auth",
+    name="Create Token",
+    tags=[AUTH_TITLE],
+    response_model=TokenResponse,
+    responses={
+        422: {
+            "description": (
+                "The server was unable to deserialize the payload given."
+            ),
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A payload containing the response token and other metadata."
+    )
+)
+async def create_token(payload: CreateTokenPayload):  # noqa
+    """
+    Creates a new access token with a given set of metadata.
+    """
 
+
+@lnx.delete(
+    "/auth",
+    name="Revoke All Token",
+    tags=[AUTH_TITLE],
+    response_model=BasicResponse,
+    responses={
+        422: {
+            "description": (
+                "The server was unable to deserialize the payload given."
+            ),
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A standard conformation message."
+    )
+)
+async def revoke_all_tokens():
+    """
+    Revoke all access tokens.
+
+    ### WARNING:
+    This is absolutely only designed for use in an emergency.
+    Running this will revoke all tokens including the super user key,
+    run this at your own risk.
+    """
+
+
+@lnx.post(
+    "/auth/{token}/revoke",
+    name="Revoke Token",
+    tags=[AUTH_TITLE],
+    response_model=BasicResponse,
+    responses={
+        400: {
+            "description": (
+                "The token you provided in the url does not exist."
+            ),
+            "model": BasicResponse,
+        },
+        422: {
+            "description": "This can never happen. (This is a docs issue)",
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A standard conformation message."
+    )
+)
+async def revoke_token():
+    """
+    Revokes a given token, any requests after this with the given token
+    will be rejected.
+    """
+
+
+@lnx.post(
+    "/auth/{token}/edit",
+    name="Edit Token",
+    tags=[AUTH_TITLE],
+    response_model=BasicResponse,
+    responses={
+        400: {
+            "description": (
+                "The token you provided in the url does not exist."
+            ),
+            "model": BasicResponse,
+        },
+        422: {
+            "description": (
+                "The server was unable to deserialize the payload given."
+            ),
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A payload containing the response token and other metadata."
+    )
+)
+async def edit_token(payload: CreateTokenPayload):  # noqa
+    """
+    Edits a given token's permissions and metadata.
+    The payload will replace **ALL** fields which will either set or unset the
+    fields.
+    """
 
 
 if __name__ == '__main__':

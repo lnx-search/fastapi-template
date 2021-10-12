@@ -1,5 +1,6 @@
 from typing import Optional, Dict, List, Union
 
+from datetime import datetime
 from pydantic import BaseModel, conint
 from enum import Enum
 
@@ -101,6 +102,18 @@ class QueryResults(BaseModel):
     time_taken: float
 
 
+class CreateTokenPayload(BaseModel):
+    permissions: int
+    user: Optional[str]
+    description: Optional[str]
+    allowed_indexes: Optional[List[str]]
+
+
+class TokenData(CreateTokenPayload):
+    created: datetime
+    token: str
+
+
 class BasicResponse(BaseModel):
     status: int
     data: Union[str, dict]
@@ -108,3 +121,7 @@ class BasicResponse(BaseModel):
 
 class QueryResponse(BasicResponse):
     data: QueryResults
+
+
+class TokenResponse(BasicResponse):
+    data: TokenData
