@@ -53,7 +53,7 @@ lnx = FastAPI(
         },
         {
             "name": OPTIMISING_TITLE,
-            "description": get_md("documents")
+            "description": get_md("optimising")
         },
     ]
 )
