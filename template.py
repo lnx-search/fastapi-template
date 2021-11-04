@@ -25,7 +25,7 @@ PERMISSIONS_RESPONSE = {
 }
 
 lnx = FastAPI(
-    version="0.6.0",
+    version="0.6.2",
     title="Lnx Docs",
     description=get_md("desc"),
     docs_url=None,
