@@ -14,7 +14,7 @@ or build from source to start using it.
 You will need a newish version of rust for this, this project was built on rustc `rustc 1.52.1`
 to be specific so any version beyond this should be alright.
 
-- Download the file via `git clone https://github.com/ChillFish8/lnx.git` and enter the downloaded 
+- Download the file via `git clone https://github.com/lnx-search/lnx.git` and enter the downloaded 
 folder.
 - Run `cargo build --release`
 - Extract the exported binary from the `target/release` folder.
