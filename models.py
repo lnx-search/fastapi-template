@@ -58,6 +58,14 @@ class IndexCreationPayload(BaseModel):
 
 
 class QueryKind(Enum):
+    """
+    The type of query to perform.
+
+    "normal": Uses the Tantivy query parser to produce a query and execute it.
+    "fuzzy": Uses typo-tolerant query system, this takes the query as raw text and is not parsed into something else.
+    "more-like-this": Searches for documents similar to the given document (document_id).
+    "term": Searches for the given query term(s) in the given field(s).
+    """
     Normal = "normal"
     Fuzzy = "fuzzy"
     MoreLikeThis = "more-like-this"
