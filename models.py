@@ -49,6 +49,7 @@ class IndexDeclaration(BaseModel):
     set_conjunction_by_default: bool = False
     use_fast_fuzzy: bool = False
     strip_stop_words: bool = False
+    auto_commit: int = 0
 
 
 class IndexCreationPayload(BaseModel):
