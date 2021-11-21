@@ -38,13 +38,13 @@ class IndexDeclaration(BaseModel):
     storage_type: StorageType
     fields: Dict[str, FieldDeclaration]
     search_fields: List[str]
-    boost_fields: Dict[str, str]
+    boost_fields: Dict[str, str] = {}
 
     reader_threads: conint(gt=0) = 1
     max_concurrency: conint(gt=1)
 
-    writer_buffer: conint(ge=300_000)
-    writer_threads: conint(gt=0)
+    writer_buffer: Optional[conint(ge=300_000)]
+    writer_threads: Optional[conint(gt=0)]
 
     set_conjunction_by_default: bool = False
     use_fast_fuzzy: bool = False
@@ -60,7 +60,7 @@ class QueryKind(Enum):
     Normal = "normal"
     Fuzzy = "fuzzy"
     MoreLikeThis = "more-like-this"
-    Term: Dict[str, Union[str, int, float]] = {
+    Term: Dict[str, Union[List[str, int, float], str, int, float]] = {
         "term": "field-name"
     }
 
