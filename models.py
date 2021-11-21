@@ -61,7 +61,7 @@ class QueryKind(Enum):
     Normal = "normal"
     Fuzzy = "fuzzy"
     MoreLikeThis = "more-like-this"
-    Term: Dict[str, Union[List[str, int, float], str, int, float]] = {
+    Term: Dict[str, Union[List[Union[str, int, float]], str, int, float]] = {
         "term": "field-name"
     }
 
