@@ -45,7 +45,7 @@ services:
       ports:
         - "8000:8000"
       volumes:
-        - "/my/dir:/etc/lnx" 
+        - "/my/dir:/etc/lnx/index" 
       environment:
         - AUTHORIZATION_KEY=hello
         - LOG_LEVEL=info
@@ -74,131 +74,125 @@ all CLI options (including environment options.)
 lnx provides a wide set of command line arguments to customise the running
 of the server.
 
-### Authentication Key
-If specified this will require an authentication key on each request. 
- 
-Generally, it's recommended to have this in a production environment.
-
-As CLI:
 ```
--a, --authentication-key <authentication-key>
-```
+USAGE:                                                                                           
+    lnx [OPTIONS]                                                                                
+                                                                                                 
+OPTIONS:                                                                                         
+        --disable-asni-logs                                                                      
+            An optional bool to disable ASNI colours and pretty formatting for logs. You probably
+            want to disable this if using file-based logging                                     
+                                                                                                 
+            [env: DISABLE_ASNI_LOGS=]                                                            
+                                                                                                 
+    -h, --host <HOST>                                                                            
+            The host to bind to (normally: '127.0.0.1' or '0.0.0.0'.)                            
 
-As environment key:
-```
-AUTHENTICATION_KEY=<key>
-```
+            [env: HOST=]
+            [default: 127.0.0.1]
 
+        --help
+            Print help information
 
-### Server Host
-The host to bind to (normally: '127.0.0.1' or '0.0.0.0'.) 
+        --json-logs
+            An optional bool to enable json formatting logging.
 
-The default is `127.0.0.1`
+            This formats the resulting log data into line-by-line JSON objects. This can be useful
+            for log files or automatic log ingestion systems however, this can come at the cost for
+            performance at very high loads.
 
-As CLI:
-```
--h, --host <host>
-```
+            [env: JSON_LOGS=]
 
-As environment key:
-```
-HOST=<host>
-```
+        --load-snapshot <LOAD_SNAPSHOT>
+            Load a past snapshot and use it's data.
 
+            This expects `./index` not to have any existing data or exist.
 
-### Server Port
-The port to bind the server to.
+            This is technically a separate sub command.
 
-The default is `8000`
+        --log-directory <LOG_DIRECTORY>
+            A optional directory to send persistent logs.
 
-As CLI:
-```
--p, --port <port>
-```
+            Logs are split into hourly chunks.
 
-As environment key:
-```
-PORT=<port>
-```
+            [env: LOG_DIRECTORY=]
 
+        --log-level <LOG_LEVEL>
+            The log level filter, any logs that are above this level won't be displayed.
 
-### Log File
-A optional file to send persistent logs.
+            For more detailed control you can use the `RUST_LOG` env var.
 
-This should be given as a file path.
+            [env: LOG_LEVEL=]
+            [default: info]
 
-As CLI:
-```
---log-file <log-file>
-```
+    -p, --port <PORT>
+            The port to bind the server to
 
-As environment key:
-```
-LOG_FILE=<log-file>
-```
+            [env: PORT=]
+            [default: 8000]
 
+        --pretty-logs
+            An optional bool to enable pretty formatting logging.
 
-### Log Level
-The log level filter, any logs that are above this level wont be displayed.
+            This for most people, this is probably too much pretty formatting however, it can make
+            reading the logs easier especially when trying to debug and / or test.
 
-Defaults to `info`
+            [env: PRETTY_LOGS=]
 
-As CLI:
-```
---log-level <log-level>
-```
+        --silent-search
+            If enabled each search request wont be logged
 
-As environment key:
-```
-LOG_LEVEL=<log-level>
-```
+            [env: SILENT_SEARCH=]
 
+        --snapshot
+            Generates a snapshot of the current server setup.
 
-### Pretty Logs
-An optional bool to use ASNI colours for log levels. 
-You probably want to disable this if using file based logging.
+            The extracted snapshot will be saved in the directory provided by `--snapshot-
+            directory`.
 
-Defaults to `true`
+        --snapshot-directory <SNAPSHOT_DIRECTORY>
+            The output directory where snapshots should be extracted to
 
-As CLI:
-```
---pretty-logs <pretty-logs>
-```
+            [env: SNAPSHOT_DIRECTORY=]
+            [default: ./snapshots]
 
-As environment key:
-```
-PRETTY_LOGS=<pretty-logs>
-```
+        --snapshot-interval <SNAPSHOT_INTERVAL>
+            The interval time in hours to take an automatic snapshot.
 
+            The limits are between 1 and 255 hours.
 
-### Silent Search
-An optional bool to disable info! level logs on every search request,
-often this can boost performance quite significantly.
-Defaults to `false`
+            This is quite a heavy process at larger index sizes so anything less than 24 hours is
+            generally recommended against.
 
-As CLI:
-```
---silent-search <silent-search>
-```
+            The extracted snapshot will be saved in the directory provided by `--snapshot-
+            directory`.
 
-As environment key:
-```
-SILENT_SEARCH=<silent-search>
-```
+            [env: SNAPSHOT_INTERVAL=]
 
+        --super-user-key <SUPER_USER_KEY>
+            The super user key.
 
-### Runtime Threads
-The number of threads to use for the [tokio](https://tokio.rs) runtime.
+            If specified this will enable auth mode and require a token bearer on every endpoint.
 
+            The super user key is used to make tokens with given permissions.
 
-If this is not set, the number of logical cores on the machine is used.
+            [env: SUPER_USER_KEY]
 
-As CLI:
-```
--t, --runtime-threads <runtime-threads>
-```
+    -t, --runtime-threads <RUNTIME_THREADS>
+            The number of threads to use for the tokio runtime.
 
-As environment key:
-```
-RUNTIME_THREADS=<runtime-threads>
+            If this is not set, the number of logical cores on the machine is used.
+
+            [env: RUNTIME_THREADS=]
+
+    -V, --version
+            Print version information
+
+        --verbose-logs
+            An optional bool to enable verbose logging, this includes additional metadata like span
+            targets, thread-names, ids, etc... as well as the existing info.
+
+            Generally you probably dont need this unless you're debugging.
+
+            [env: VERBOSE_LOGS=]
 ```
