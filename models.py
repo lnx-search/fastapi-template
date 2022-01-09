@@ -1,12 +1,11 @@
 from typing import Optional, Dict, List, Union
 
 from datetime import datetime
-from pydantic import BaseModel, conint
+from pydantic import BaseModel, conint, Field
 from enum import Enum
 
 
 class StorageType(Enum):
-    Memory = "memory"
     TempDir = "tempdir"
     FileSystem = "filesystem"
 
@@ -57,23 +56,6 @@ class IndexCreationPayload(BaseModel):
     index: IndexDeclaration
 
 
-class QueryKind(Enum):
-    """
-    The type of query to perform.
-
-    "normal": Uses the Tantivy query parser to produce a query and execute it.
-    "fuzzy": Uses typo-tolerant query system, this takes the query as raw text and is not parsed into something else.
-    "more-like-this": Searches for documents similar to the given document (document_id).
-    "term": Searches for the given query term(s) in the given field(s).
-    """
-    Normal = "normal"
-    Fuzzy = "fuzzy"
-    MoreLikeThis = "more-like-this"
-    Term: Dict[str, Union[List[Union[str, int, float]], str, int, float]] = {
-        "term": "field-name"
-    }
-
-
 class Sort(Enum):
     Acs = "acs"
     Desc = "desc"
@@ -85,9 +67,37 @@ class Occur(Enum):
     MustNot = "mustnot"
 
 
+class FuzzyKind(BaseModel):
+    """ The required context for the fuzzy kind query. """
+
+    ctx: str
+
+
+class NormalKind(BaseModel):
+    """ The required context for the normal kind query. """
+
+    ctx: str
+
+
+class MoreLikeThisKind(BaseModel):
+    """ The required context for the normal kind query. """
+
+    ctx: int
+
+
+class TermKind(BaseModel):
+    """ The required context for the term kind query. """
+
+    ctx: str
+    fields: Union[str, List[str]]
+
+
 class QueryData(BaseModel):
-    value: Union[str, int, float]
-    kind: QueryKind = QueryKind.Fuzzy
+    fuzzy: Optional[FuzzyKind]
+    normal: Optional[FuzzyKind]
+    more_like_this: Optional[FuzzyKind] = Field(alias="more-like-this")
+    term: Optional[FuzzyKind]
+
     occur: Occur = Occur.Should
 
 

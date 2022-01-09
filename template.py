@@ -9,6 +9,7 @@ def get_md(file: str) -> str:
 
 
 INDEXES_TITLE = "📚 Managing indexes"
+SNAPSHOTS_TITLE = "📷 Snapshots"
 TRANSACTIONS_TITLE = "💾 Managing transactions"
 DOCUMENTS_TITLE = "📃 Managing documents"
 SEARCHES_TITLE = "🔍 Run searches"
@@ -25,7 +26,7 @@ PERMISSIONS_RESPONSE = {
 }
 
 lnx = FastAPI(
-    version="0.7.0",
+    version="0.8.0",
     title="Lnx Docs",
     description=get_md("desc"),
     docs_url=None,
@@ -34,6 +35,10 @@ lnx = FastAPI(
         {
             "name": INDEXES_TITLE,
             "description": get_md("indexes")
+        },
+        {
+            "name": INDEXES_TITLE,
+            "description": get_md("snapshots")
         },
         {
             "name": TRANSACTIONS_TITLE,
@@ -199,11 +204,20 @@ async def add_documents(
     ...
 
 
+class DeletePayload(BaseModel):
+    num_deleted: int
+    detail: str
+
+
+class DeleteResponse(BasicResponse):
+    data: DeletePayload
+
+
 @lnx.delete(
     "/indexes/{index:str}/documents",
     name="Delete Specific Documents",
     tags=[DOCUMENTS_TITLE],
-    response_model=BasicResponse,
+    response_model=DeleteResponse,
     responses={
         400: {
             "description": "The index does not exist.",
@@ -230,7 +244,66 @@ async def delete_documents(
     unique otherwise multiple docs can be deleted via this method.
 
     NOTE: This only works with fast fields, so it's a good idea to make a unique
-    id or use the document_id via the `_id` field.
+    id or use the document specific removal via `DELETE /index/:index/document/:document_id`.
+    """
+
+
+@lnx.delete(
+    "/indexes/{index:str}/documents/query",
+    name="Delete Documents By Query",
+    tags=[DOCUMENTS_TITLE],
+    response_model=DeleteResponse,
+    responses={
+        400: {
+            "description": "The index does not exist.",
+            "model": BasicResponse,
+        },
+        422: {
+            "description": (
+                "The server was unable to deserialize the payload given."
+            ),
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A standard response from Lnx, with a simple conformation message."
+    ),
+)
+async def delete_documents_by_query(
+    index: str,  # noqa
+    payload: QueryPayload,  # noqa
+):
+    """
+    Deletes any documents matched with the given query.
+
+    This respects the limits and offsets of the query, so to delete all the matched
+    results you will need to send the request several time however, This is generally not recommended to do.
+    """
+
+
+@lnx.delete(
+    "/indexes/{index:str}/documents/{document_id:int}",
+    name="Delete Document",
+    tags=[DOCUMENTS_TITLE],
+    response_model=BasicResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the document id is invalid.",
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A standard response from Lnx, with a simple conformation message."
+    ),
+)
+async def delete_documents(
+    index: str,  # noqa
+    document_id: int,
+):
+    """
+    Delete a specific document with the provided id.
     """
 
 
