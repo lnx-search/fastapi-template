@@ -93,16 +93,30 @@ class TermKind(BaseModel):
 
 
 class QueryData(BaseModel):
-    fuzzy: Optional[FuzzyKind]
-    normal: Optional[FuzzyKind]
-    more_like_this: Optional[FuzzyKind] = Field(alias="more-like-this")
-    term: Optional[FuzzyKind]
-
     occur: Occur = Occur.Should
 
 
+class FuzzyQueryData(QueryData):
+    fuzzy: FuzzyKind
+
+
+class NormalQueryData(QueryData):
+    normal: NormalKind
+
+
+class MoreLikeThisQueryData(BaseModel):
+    more_like_this: MoreLikeThisKind = Field(alias="more-like-this")
+
+
+class TermQueryData(BaseModel):
+    term: TermKind
+
+
+QueryKinds = Union[FuzzyQueryData, NormalQueryData, MoreLikeThisQueryData, TermQueryData]
+
+
 class QueryPayload(BaseModel):
-    query: Union[str, QueryData, List[QueryData]]
+    query: Union[str, QueryKinds, List[QueryKinds]]
     limit: conint(gt=0) = 20
     offset: conint(ge=0) = 0
     order_by: Optional[str] = None
