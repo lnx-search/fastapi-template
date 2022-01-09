@@ -104,11 +104,11 @@ class NormalQueryData(QueryData):
     normal: NormalKind
 
 
-class MoreLikeThisQueryData(BaseModel):
+class MoreLikeThisQueryData(QueryData):
     more_like_this: MoreLikeThisKind = Field(alias="more-like-this")
 
 
-class TermQueryData(BaseModel):
+class TermQueryData(QueryData):
     term: TermKind
 
 
