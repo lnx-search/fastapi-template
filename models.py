@@ -162,3 +162,11 @@ class TokenResponse(BasicResponse):
 
 class DocumentFetchResponse(BasicResponse):
     data: DocumentHit
+
+
+class StopwordsResponse(BasicResponse):
+    data: List[str]
+
+
+class SynonymResponse(BasicResponse):
+    data: Dict[str, List[str]]

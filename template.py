@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 
 from models import *
 
@@ -15,6 +15,7 @@ DOCUMENTS_TITLE = "📃 Managing documents"
 SEARCHES_TITLE = "🔍 Run searches"
 AUTH_TITLE = "🔑 Securing lnx"
 OPTIMISING_TITLE = "⚡ Optimising your index"
+CONFIG_TITLE = "⚙️ Synonyms & Stopwords"
 
 PERMISSIONS_RESPONSE = {
     401: {
@@ -47,6 +48,10 @@ lnx = FastAPI(
         {
             "name": DOCUMENTS_TITLE,
             "description": get_md("documents")
+        },
+        {
+            "name": CONFIG_TITLE,
+            "description": get_md("synonyms_and_stopwords")
         },
         {
             "name": SEARCHES_TITLE,
@@ -382,6 +387,227 @@ async def get_document(index: str, document_id: int):  # noqa
 async def search_index(index: str, payload: QueryPayload):  # noqa
     """
     Search the index for the given query.
+    """
+
+
+@lnx.post(
+    "/indexes/{index:str}/stopwords",
+    name="Add Stopwords",
+    tags=[CONFIG_TITLE],
+    response_model=QueryResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the query is malformed",
+            "model": BasicResponse,
+        },
+        422: {
+            "description": (
+                "The server was unable to deserialize the payload given."
+            ),
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A list of matching results ordered by and sorted according to the passed query."
+    )
+)
+async def add_synonyms(index: str, payload: List[str] = Body(...)):  # noqa
+    """
+    Adds a set of stopwords to the index.
+
+    Note:
+        Stop words are only applied if `strip_stop_words: true` in the schema config.
+    """
+
+
+@lnx.get(
+    "/indexes/{index:str}/stopwords",
+    name="Get Stopwords",
+    tags=[CONFIG_TITLE],
+    response_model=StopwordsResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the query is malformed",
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A "
+    )
+)
+async def get_stopwords(index: str):  # noqa
+    """
+    Get all the stopwords for the given index.
+
+    This may have unexpected results if no stop words have been added,
+    so the engine falls back to a default set of stop words.
+
+    Note:
+        Stop words are only applied if `strip_stop_words: true` in the schema config.
+    """
+
+
+@lnx.delete(
+    "/indexes/{index:str}/stopwords",
+    name="Delete Stopwords",
+    tags=[CONFIG_TITLE],
+    response_model=BasicResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the query is malformed",
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+)
+async def delete_stopwords(index: str, payload: List[str] = Body(...)):  # noqa
+    """
+    Deletes a set of stopwords from the index.
+    """
+
+
+@lnx.delete(
+    "/indexes/{index:str}/stopwords/clear",
+    name="Clear All Stopwords",
+    tags=[CONFIG_TITLE],
+    response_model=BasicResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the query is malformed",
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+)
+async def clear_stopwords(index: str):  # noqa
+    """
+    Deletes all stopwords from the index.
+    """
+
+
+@lnx.post(
+    "/indexes/{index:str}/synonyms",
+    name="Add Synonyms",
+    tags=[CONFIG_TITLE],
+    response_model=QueryResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the query is malformed",
+            "model": BasicResponse,
+        },
+        422: {
+            "description": (
+                "The server was unable to deserialize the payload given."
+            ),
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A list of matching results ordered by and sorted according to the passed query."
+    )
+)
+async def add_synonyms(index: str, payload: List[str] = Body(...)):  # noqa
+    """
+    Add synonyms to the index.
+
+    Synonyms can be provided by a array of strings and each entry follows the format of:
+
+    ```
+    <word>,<word>:<synonym>,<synonym>,<synonym>
+    ```
+
+    Words can be mapped one to one, one to many, or many to many.
+
+    ```json
+    [
+        "iphone,apple,phone:apple,phone,iphone",
+        "oven:microwave,toaster",
+        "pen:pencil"
+    ]
+    ```
+    """
+
+
+@lnx.get(
+    "/indexes/{index:str}/synonyms",
+    name="Get Synonyms",
+    tags=[CONFIG_TITLE],
+    response_model=SynonymResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the query is malformed",
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+    response_description=(
+        "A JSON object containing keys and their mapped synonyms."
+    )
+)
+async def get_synonyms(index: str):  # noqa
+    """
+    Get all the synonyms within the index.
+    """
+
+
+@lnx.delete(
+    "/indexes/{index:str}/synonyms",
+    name="Delete Synonyms",
+    tags=[CONFIG_TITLE],
+    response_model=BasicResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the query is malformed",
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+)
+async def delete_synonyms(index: str, payload: List[str] = Body(...)):  # noqa
+    """
+    Deletes a set of synonyms from the index.
+
+    Note:
+    These delete the word mappings. They do not remove the word from every other word's values.
+    i.e. If we have the following synonyms:
+
+    ```json
+    [
+        "iphone,apple,phone:apple,phone,iphone"
+    ]
+    ```
+
+    And we delete synonyms with the following payload:
+    ```json
+    [
+        "iphone"
+    ]
+    ```
+
+    Only the iphone's given synonyms will be removed.
+    Meaning both `apple` and `phone` will still have `'apple', 'phone', 'iphone'` as their synonyms.
+    """
+
+
+@lnx.delete(
+    "/indexes/{index:str}/synonyms/clear",
+    name="Clear All Synonyms",
+    tags=[CONFIG_TITLE],
+    response_model=BasicResponse,
+    responses={
+        400: {
+            "description": "The index does not exist or the query is malformed",
+            "model": BasicResponse,
+        },
+        **PERMISSIONS_RESPONSE,
+    },
+)
+async def clear_synonyms(index: str):  # noqa
+    """
+    Deletes all synonyms from the index, essentially making it a blank slate again.
     """
 
 
