@@ -20,16 +20,12 @@ class FieldType(Enum):
     Facet = "facet"
 
 
-class FastFieldType(Enum):
-    Single = "single"
-    Multi = "multi"
-
-
 class FieldDeclaration(BaseModel):
     type: FieldType
     stored: Optional[bool]
     indexed: Optional[bool]
-    fast: Optional[FastFieldType]
+    multi: bool = False
+    fast: bool = False
 
 
 class IndexDeclaration(BaseModel):
@@ -71,6 +67,7 @@ class FuzzyKind(BaseModel):
     """ The required context for the fuzzy kind query. """
 
     ctx: str
+    fields: Optional[Union[str, List[str]]]
 
 
 class NormalKind(BaseModel):
@@ -124,7 +121,7 @@ class QueryPayload(BaseModel):
 
 
 class DocumentHit(BaseModel):
-    data: Dict[str, List[str]]
+    data: Dict[str, Union[List[Union[str, int, float]], str, int, float]]
     ratio: Optional[float]
     document_id: str
 
